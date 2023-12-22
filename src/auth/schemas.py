@@ -1,13 +1,22 @@
 from datetime import datetime
+from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field, UUID4, field_validator
 from pydantic.types import constr
 
 
+
+class UserRole(str, Enum):
+    developer = "developer"
+    manager = "manager"
+    test_engineer = "test engineer"
+    team_lead = "team lead"
+
 class UserBase(BaseModel):
     email: EmailStr
     name: str
+    role: UserRole
 
 
 class TokenBase(BaseModel):
@@ -43,18 +52,20 @@ class UserInDBBase(UserBase):
         orm_mode = True
 
 
-# Additional properties to return via API
 class User(UserInDBBase):
     token: (TokenBase | None) = None
 
 
-# class UserKey(BaseModel):
-#     public_key: str
-#
-#
-# class UserKeyInDB(BaseModel):
-#     id: int
-#     public_key: str
-#
-#     class Config:
-#         orm_mode = True
+class UserUpdateRole(BaseModel):
+    id: int
+    new_role: str
+class UserUpdateLogin(BaseModel):
+    id: int
+    new_email: EmailStr
+
+
+
+class UpdateResult(BaseModel):
+    success: bool
+    message: str
+    updated_user: Optional[User] = None

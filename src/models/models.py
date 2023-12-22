@@ -25,7 +25,8 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50))
     email = Column(EmailType(50), unique=True, nullable=False)
-    role = Column(String(50))
+    role = Column(String(70), unique=False, nullable=True)
+    # role_id = Column(Integer, ForeignKey('user_role.id'), nullable=True)
     password = Column(PasswordType(schemes=["pbkdf2_sha512"]), nullable=False)
 
     tokens = relationship(
@@ -55,34 +56,38 @@ class UserToken(Base):
 
     user = relationship("User", back_populates="tokens", lazy='joined')
 
-# class Task(Base):
-#     __tablename__ = "tasks"
-#     number = Column()
-#     priority = Column(String(50))
-#     status = Column(String(50))
-#     title = Column(String(50))
-#     description = Column(String())
-#     executor = Column(String(50))
-#     creator = Column(String(50))
-#     created_at = Column(DateTime)
-#     updated_at = Column(DateTime)
-#     type = Column(String(50))
-#     blocking_tasks = Column(String(50))
-# task = Table(
-#     'task',
-#     metadata,
-# Column("number", primary_key=True, index=True),
-#     Column("username", String, nullable=False),
-#     Column("priority", String, nullable=False),
-#     Column("status", String, nullable=False),
-#     Column("title", String, nullable=False),
-#     Column("description", String, nullable=False),
-#     Column("executor", String, nullable=False),
-#     Column("creator", String, nullable=False),
-#     Column("created_at",  TIMESTAMP, default=datetime.utcnow),
-#     Column("updated_at",  TIMESTAMP, default=datetime.utcnow),
-#     Column("type", String, nullable=False),
-#     Column("blocking_tasks", String, nullable=False),
-# )
+# class Role(Base):
+#     __tablename__ = "user_role"
+#
+#     id = Column(Integer, primary_key=True, index=True)
+#     name = Column(String(50))
+#
+#     users = relationship("User", back_populates="role_id")
+
+
+class Task(Base):
+    __tablename__ = "tasks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    type = Column(String(50), nullable=False)
+    priority = Column(String(50))
+    status = Column(String(50), nullable=False)
+    title = Column(String(50))
+    description = Column(String())
+    executor = Column(
+        Integer, ForeignKey("users.id", ondelete='CASCADE'), nullable=True
+    )
+    creator = Column(String(50), nullable=False)
+    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False)
+    # blocking_tasks = Column(String(50))
+
+class Status(Base):
+    __tablename__ = "status"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(50), nullable=False)
+
+
 
 

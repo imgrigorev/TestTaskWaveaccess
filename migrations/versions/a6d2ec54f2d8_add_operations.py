@@ -1,4 +1,4 @@
-"""Add operations
+"""Add tasks
 
 Revision ID: a6d2ec54f2d8
 Revises: df4422bf12c7
