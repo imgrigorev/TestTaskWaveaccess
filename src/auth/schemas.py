@@ -69,3 +69,6 @@ class UpdateResult(BaseModel):
     success: bool
     message: str
     updated_user: Optional[User] = None
+
+class UserChangePassword(BaseModel):
+    pass

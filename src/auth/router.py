@@ -10,6 +10,17 @@ from auth.schemas import Login, User, UserCreate, UserUpdateRole, UserUpdateLogi
 
 router = APIRouter()
 
+"""!!!!Доделать!!!!"""
+@router.post("/change_password/") #, response_model=User
+async def create_user(user: UserCreate, session : AsyncSession = Depends(get_async_session)):
+    user_db = await utils.get_user_by_email(session, email=user.email)
+    if user_db:
+        raise HTTPException(status_code=400, detail="User already registered")
+    # user = await utils.create_user(session, user=user)
+    # # user.token = await utils.create_user_token(session, user=user)
+    # return {"registration status": "success"}
+
+
 
 @router.post("/sign-up/") #, response_model=User
 async def create_user(user: UserCreate, session : AsyncSession = Depends(get_async_session)):
@@ -42,6 +53,8 @@ async def login(user: Login, session : AsyncSession = Depends(get_async_session)
 async def me(current_user: CurrentUser): #, session : AsyncSession = Depends(get_async_session)
     return current_user
 
+
+""" Управление пользователями для админа """
 @router.put("/users/change_role")
 async def update_user_role(user_id: UserUpdateRole, current_user: CurrentUser, session : AsyncSession = Depends(get_async_session)):
     if current_user.role.lower() != "manager":

@@ -11,7 +11,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import EmailType, force_auto_coercion, PasswordType
+from sqlalchemy_utils import EmailType, PasswordType
 
 from sqlalchemy.orm import declarative_base
 
@@ -74,19 +74,18 @@ class Task(Base):
     status = Column(String(50), nullable=False)
     title = Column(String(50))
     description = Column(String())
-    executor = Column(
-        Integer, ForeignKey("users.id", ondelete='CASCADE'), nullable=True
-    )
+    executor = Column(Integer)
+    # executor = Column(String)
     creator = Column(String(50), nullable=False)
-    created_at = Column(DateTime, nullable=False)
-    updated_at = Column(DateTime, nullable=False)
-    # blocking_tasks = Column(String(50))
+    created_at = Column(DateTime(timezone=True), nullable=False)
+    updated_at = Column(DateTime(timezone=True), nullable=False)
 
-class Status(Base):
-    __tablename__ = "status"
 
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(50), nullable=False)
+# class Status(Base):
+#     __tablename__ = "status"
+#
+#     id = Column(Integer, primary_key=True, index=True)
+#     title = Column(String(50), nullable=False)
 
 
 
