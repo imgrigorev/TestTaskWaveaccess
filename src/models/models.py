@@ -74,7 +74,7 @@ class Task(Base):
     status = Column(String(50), nullable=False)
     title = Column(String(50))
     description = Column(String())
-    executor = Column(Integer)
+    executor_id = Column(Integer)
     # executor = Column(String)
     creator = Column(String(50), nullable=False)
     created_at = Column(DateTime(timezone=True), nullable=False)

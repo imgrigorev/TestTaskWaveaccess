@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
 
 from sqlalchemy import select, update
-from sqlalchemy.orm import joinedload
-
+from fastapi import HTTPException
 from models.models import Task
 
 from tasks.schemas import TaskCreate, TaskUpdate, TaskInDB, TaskBase
+from auth.utils import get_user_by_id
+
 
 async def create_task(session, task: TaskCreate) -> TaskInDB:
     db_task = TaskBase(**task.dict(),
@@ -17,8 +18,12 @@ async def create_task(session, task: TaskCreate) -> TaskInDB:
     return db_task
 
 
-async def get_task_by_id(session, id : int) :
-    db_task = await session.execute(select(Task).where(Task.id == id))
-    return db_task.scalars().one()
+async def get_task_by_id(session, id: int):
+    stmt = select(Task).where(Task.id == id)
+    result = await session.execute(stmt)
+    task = result.scalars().first()
+
+    return task.status
+
 
 

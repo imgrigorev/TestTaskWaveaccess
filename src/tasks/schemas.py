@@ -37,7 +37,7 @@ class TaskBase(BaseModel):
     status: TaskStatus
     title: str = None
     description: str = None
-    executor: str = None
+    executor_id: int = None
     creator: str = None
     created_at: datetime
     updated_at: datetime
@@ -49,15 +49,16 @@ class TaskBase(BaseModel):
 class TaskCreate(BaseModel):
     pass
 
-class TaskUpdate(TaskBase):
+class TaskUpdate(BaseModel):
     type: Optional[TaskType] = None
     priority: Optional[TaskPriority] = None
     status: Optional[TaskStatus] = None
     title: Optional[str] = None
     description: Optional[str] = None
-    executor: Optional[str] = None
+    executor_id: Optional[int] = None
     creator: Optional[str] = None
-    updated_at: datetime
+    created_at: datetime = None
+    updated_at: datetime = None
 
     def check_status_transition(self, current_status: str, new_status: str):
         allowed_transitions = {
@@ -76,18 +77,18 @@ class TaskUpdate(TaskBase):
         if new_status not in allowed_transitions[current_status]:
             raise ValueError(f"Invalid status transition: {current_status} to {new_status}")
 
-    def check_executor_constraints(self):
-        if self.executor == "Manager":
+    def check_executor_constraints(self, executor_role):
+        if executor_role == "manager":
             raise ValueError("Manager cannot be assigned as an executor.")
 
-        if not self.executor and self.status != TaskStatus.InProgress:
-            return  # Условие выполнено, исполнитель не указан, и статус не in progress.
+        if not self.executor_id and self.status != TaskStatus.InProgress:
+            return
 
         if self.status in {TaskStatus.InProgress, TaskStatus.CodeReview,
-                           TaskStatus.DevTest} and self.executor == "TestEngineer":
+                           TaskStatus.DevTest} and executor_role == "test engineer":
             raise ValueError(f"{self.status} cannot have Test Engineer as an executor.")
 
-        if self.status == TaskStatus.Testing and self.executor == "Developer":
+        if self.status == TaskStatus.Testing and executor_role == "developer":
             raise ValueError("Testing cannot have Developer as an executor.")
 
 class TaskInDB(TaskBase):

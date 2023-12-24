@@ -5,34 +5,35 @@ from fastapi.responses import JSONResponse
 from auth.dependecies import CurrentUser
 from database import get_async_session
 import auth.utils as utils
-from auth.schemas import Login, User, UserCreate, UserUpdateRole, UserUpdateLogin
+from auth.schemas import Login, User, UserCreate, UserUpdateRole, UserUpdateLogin, UserChangePassword
 
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/auth",
+    tags=["auth"]
+)
 
-"""!!!!Доделать!!!!"""
-@router.post("/change_password/") #, response_model=User
+@router.post("/change_password/")
+async def change_password(user: UserChangePassword, session : AsyncSession = Depends(get_async_session)):
+    user_db = await utils.get_user_by_email(session, email=user.email)
+    if not user_db:
+        raise HTTPException(status_code=400, detail="User not found")
+    if user_db.password != user.password:
+        raise HTTPException(status_code=400, detail="Wrong password")
+    result = await utils.change_password(session, user)
+    return result
+
+
+@router.post("/sign-up/")
 async def create_user(user: UserCreate, session : AsyncSession = Depends(get_async_session)):
     user_db = await utils.get_user_by_email(session, email=user.email)
     if user_db:
         raise HTTPException(status_code=400, detail="User already registered")
-    # user = await utils.create_user(session, user=user)
-    # # user.token = await utils.create_user_token(session, user=user)
-    # return {"registration status": "success"}
+    result = await utils.create_user(session, user=user)
+    return result
 
 
-
-@router.post("/sign-up/") #, response_model=User
-async def create_user(user: UserCreate, session : AsyncSession = Depends(get_async_session)):
-    user_db = await utils.get_user_by_email(session, email=user.email)
-    if user_db:
-        raise HTTPException(status_code=400, detail="User already registered")
-    user = await utils.create_user(session, user=user)
-    # user.token = await utils.create_user_token(session, user=user)
-    return {"registration status": "success"}
-
-
-@router.post("/login/") #, response_model=User
+@router.post("/login/")
 async def login(user: Login, session : AsyncSession = Depends(get_async_session)):
     user_db = await utils.get_user_by_email(session, email=user.email)
     if not user_db:
@@ -43,18 +44,17 @@ async def login(user: Login, session : AsyncSession = Depends(get_async_session)
     if not user_db.token :
         raise HTTPException(status_code=500, detail="Internal server error")
 
-    response = JSONResponse(content={"message": "Login successful"})
-    response.set_cookie(key="access_token", value=user_db.token.token)
+    result = JSONResponse(content={"message": "Login successful"})
+    result.set_cookie(key="access_token", value=user_db.token.token)
 
-    return response
+    return result
 
 
-@router.get("/users/me/", response_model=User) #, response_model=User
-async def me(current_user: CurrentUser): #, session : AsyncSession = Depends(get_async_session)
+@router.get("/users/me/", response_model=User)
+async def me(current_user: CurrentUser):
     return current_user
 
 
-""" Управление пользователями для админа """
 @router.put("/users/change_role")
 async def update_user_role(user_id: UserUpdateRole, current_user: CurrentUser, session : AsyncSession = Depends(get_async_session)):
     if current_user.role.lower() != "manager":

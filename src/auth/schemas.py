@@ -70,5 +70,5 @@ class UpdateResult(BaseModel):
     message: str
     updated_user: Optional[User] = None
 
-class UserChangePassword(BaseModel):
-    pass
+class UserChangePassword(Login):
+    new_password: constr(strip_whitespace=True, min_length=8)

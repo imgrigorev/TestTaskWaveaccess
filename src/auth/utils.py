@@ -4,7 +4,7 @@ from sqlalchemy import select, update
 from sqlalchemy.orm import joinedload
 
 from models.models import User, UserToken
-from auth.schemas import UserCreate, UserUpdateRole, UpdateResult, UserUpdateLogin
+from auth.schemas import UserCreate, UserUpdateRole, UpdateResult, UserUpdateLogin, UserChangePassword
 
 
 async def get_user_by_email(session, email: str) -> User:
@@ -71,3 +71,10 @@ async def change_login(session, user: UserUpdateLogin) -> UpdateResult:
     updated_user = updated_user.scalar()
 
     return UpdateResult(success=True, message="User login changed successfully", updated_user=updated_user)
+
+
+async def change_password(session, user: UserChangePassword) -> UpdateResult:
+    query = update(User).where(User.email == user.email).values(password = user.new_password)
+    await session.execute(query)
+    await session.commit()
+    return {"status":"success"}
